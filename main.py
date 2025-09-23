@@ -1,30 +1,41 @@
-import liste_de_tache
+import tache
 
-#J'ai utilisé un peu d'IA à ce niveau pour apprendre à faire les menu et à corriger les bug, à revoir également!
-
-def menu():
-    collection1 = liste_de_tache.ListeTaches() 
-    
+def main():
+    todo_list = []
+    print("************")
+    print("TO-DO LIST")
+    print("************")
     while True:
         print("\n--- MENU ---")
         print("1. Ajouter une tâche")
         print("2. Afficher toutes les tâches")
-        print("3. Supprimer une tâche")
-        print("4. Quitter")
-        
+        print("3. Modifier une tâche")
+        print("4. Afficher les tâches en cours")
+        print("5. Afficher les tâches achevées")
+        print("6. Supprimer une tâche")
+        print("7. Quitter")
+        print()
         choix = input("Quel est votre choix : ")
-        
         if choix == "1":
-            collection1.ajouter_tache()
+            tache.ajouter_tache(todo_list)
         elif choix == "2":
-            collection1.afficher_contenu_collection()
+            tache.afficher_taches(todo_list)
         elif choix == "3":
-            collection1.supprimer_tache()
+            tache.modifier_tache(todo_list)
         elif choix == "4":
+            tache.taches_en_cours(todo_list)
+        elif choix == "5":
+            tache.taches_achevees(todo_list)
+        elif choix == "6":
+            tache.supprimer_tache(todo_list)
+        elif choix == "7":
             break 
         else:
             print("Choix invalide. Veuillez réessayer!")
 
-
 if __name__ == "__main__":
-    menu()
+    main()
+
+
+
+
