@@ -29,7 +29,7 @@ class Tache:
 
 def ajouter_tache(liste_tache):
     print()
-    titre = input("Enrez le titre de la tâche: ")
+    titre = input("Entrez le titre de la tâche: ")
     date = input("Date de création: ")
     question = input(("Voulez vous ajouter une description de la tâche?(o/n) "))
     if question.lower() == "o":
@@ -41,9 +41,12 @@ def ajouter_tache(liste_tache):
     liste_tache.append(tache_cree)
 
 def afficher_taches(liste_tache):
-    for tache in liste_tache:
-        print(tache)
-        print()
+    if liste_tache:
+        for tache in liste_tache:
+            print(tache)
+            print()
+    else:
+        print("Vous n'avez ajouté aucune tâche!")
 
 def afficher_nom_taches(liste_tache):
     for tache in liste_tache:
@@ -76,7 +79,7 @@ def taches_en_cours(liste_tache):
 
 def existence_tache(liste_tache, tache_a_verifier):
         for tache in liste_tache:
-            if tache.titre == tache_a_verifier:
+            if tache.titre.lower() == tache_a_verifier.lower():
                 return tache
             return False
 
@@ -104,7 +107,7 @@ def modifier_tache(liste_tache):
                     nouveau_statut = input("Entrez le nouveau statut (En cours/Achevé): ")
                     tache_a_modifier.changer_statut(nouveau_statut)
                 elif choix == "4":
-                    break
+                    return
                 else:
                     print("Choix invalide. Veuillez réessayer!")
         else:
@@ -117,8 +120,14 @@ def supprimer_tache(liste_tache):
         titre_a_supprimer = input("Entrez le titre de la tâche à supprimer: ")
         tache_a_supprimer = existence_tache(liste_tache, titre_a_supprimer)
         if tache_a_supprimer:
-            liste_tache.remove(tache_a_supprimer)
-            print("Tache supprimée avec succès!")
+            question = input("Voulez vous vraiment supprimer la tâche " +str(tache_a_supprimer.titre) + "?(o/n): ")
+            if question.lower() == "o":
+                liste_tache.remove(tache_a_supprimer)
+                print("Tache supprimée avec succès!")
+                break
+            else:
+                print("la tâche", tache_a_supprimer.titre,"n'a pas été supprimée")
+                break
         else:
             recommencer = input("Cette tâche n'existe pas! Voulez vous réessayer?(o/n): ")
             if recommencer.lower() != "o":
