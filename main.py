@@ -1,40 +1,68 @@
-import tache
 
-def main():
-    todo_list = []
-    print("************")
-    print("TO-DO LIST")
-    print("************")
-    while True:
-        print("\n--- MENU ---")
-        print("1. Ajouter une tâche")
-        print("2. Afficher toutes les tâches")
-        print("3. Modifier une tâche")
-        print("4. Afficher les tâches en cours")
-        print("5. Afficher les tâches achevées")
-        print("6. Supprimer une tâche")
-        print("7. Quitter")
-        print()
-        choix = input("Quel est votre choix : ")
-        if choix == "1":
-            tache.ajouter_tache(todo_list)
-        elif choix == "2":
-            tache.afficher_taches(todo_list)
-        elif choix == "3":
-            tache.modifier_tache(todo_list)
-        elif choix == "4":
-            tache.taches_en_cours(todo_list)
-        elif choix == "5":
-            tache.taches_achevees(todo_list)
-        elif choix == "6":
-            tache.supprimer_tache(todo_list)
-        elif choix == "7":
-            break 
-        else:
-            print("Choix invalide. Veuillez réessayer!")
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List
+from contextlib import asynccontextmanager
+import crud
+import models
+import schemas
+import database
+engine = database.engine
+Base = database.Base
+get_db = database.get_db
 
-if __name__ == "__main__":
-    main()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Démarrage de l'application...")
+    async with database.engine.begin() as conn:
+        await conn.run_sync(database.Base.metadata.create_all)
+        
+    yield 
+    
+    print("Arrêt de l'application...")
+
+app = FastAPI(title="To-Do List", lifespan=lifespan)
+
+@app.get("/")
+async def root():
+    return {"message": "Bienvenue sur l'API To-Do List"}
+
+@app.post("/taches/", response_model=schemas.Tache)
+async def create_tache_for_user(
+    tache: schemas.TacheCreate, 
+    db: AsyncSession = Depends(get_db) 
+):
+    return await crud.create_tache(db=db, tache=tache)
+
+@app.get("/taches/", response_model=List[schemas.Tache])
+async def read_taches(db: AsyncSession = Depends(get_db)):
+    taches = await crud.get_taches(db=db)
+    return taches
+
+@app.put("/taches/{tache_id}", response_model=schemas.Tache)
+async def update_existing_tache(
+    tache_id: int, 
+    tache: schemas.TacheCreate, 
+    db: AsyncSession = Depends(get_db)
+):
+    db_tache = await crud.update_tache(db, tache_id=tache_id, tache_update=tache)
+    if db_tache is None:
+        raise HTTPException(status_code=404, detail="Tâche non trouvée")
+    return db_tache
+
+@app.delete("/taches/{tache_id}", status_code=204) # 204 = No Content, succès sans corps
+async def delete_existing_tache(tache_id: int, db: AsyncSession = Depends(get_db)):
+    success = await crud.delete_tache(db, tache_id=tache_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Tâche non trouvée")
+    return 
+
+@app.get("/taches/{tache_id}", response_model=schemas.Tache)
+async def read_tache_by_id(tache_id: int, db: AsyncSession = Depends(get_db)):
+    db_tache = await crud.get_tache_by_id(db, tache_id=tache_id)
+    if db_tache is None:
+        raise HTTPException(status_code=404, detail="Tâche non trouvée")
+    return db_tache
 
 
 
